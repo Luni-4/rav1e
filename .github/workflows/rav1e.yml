@@ -74,10 +74,6 @@ jobs:
         toolchain: stable
         target: aarch64-unknown-linux-gnu
         override: true
-
-    - name: Set target build
-      run: |
-        echo ::set-env name=CARGO_BUILD_TARGET::aarch64-unknown-linux-gnu
 #    - name: Install cross
 #      env:
 #        LINK: https://github.com/rust-embedded/cross/releases/download
@@ -110,7 +106,7 @@ jobs:
         echo ::set-env name=CARGO_TARGET_${upcase}_LINKER::aarch64-linux-gnu-gcc
     - name: Run tests
       run: |
-        cargo test
+        cargo test --target aarch64-unknown-linux-gnu
 
   build-unix:
 
