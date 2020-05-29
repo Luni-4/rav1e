@@ -74,6 +74,9 @@ jobs:
     - name: Cross test ${{ matrix.conf }}
       run: |
         cross build --target ${{ matrix.target }}
+    - name: Run ${{ matrix.conf }}
+      run: |
+        cross run --target ${{ matrix.target }} -- --help
 
   build-unix:
 
