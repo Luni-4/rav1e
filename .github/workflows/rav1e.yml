@@ -37,6 +37,44 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: -- -D warnings --verbose -A clippy::wrong-self-convention
 
+  cross-tests:
+
+    strategy:
+      matrix:
+        conf:
+         - aarch64
+         - powerpc
+         - ibm-z
+        include:
+         - conf: aarch64
+           target: aarch64-unknown-linux-gnu
+         - conf: powerpc
+           target: powerpc64le-unknown-linux-gnu
+         - conf: ibm-z
+           target: s390x-unknown-linux-gnu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - name: Install cross
+      env:
+        LINK: https://github.com/rust-embedded/cross/releases/download
+        CROSS_VERSION: 0.2.0
+        CROSS_FILE: cross-v0.2.0-x86_64-unknown-linux-musl
+      run: |
+        curl -L "$LINK/v$CROSS_VERSION/$CROSS_FILE.tar.gz" |
+        tar xz -C $HOME/.cargo/bin
+    - name: Cross test ${{ matrix.conf }}
+      run: |
+        cross test --target ${{ matrix.target }}
+
   build-unix:
 
     strategy:
@@ -53,9 +91,6 @@ jobs:
          - check-no-default
          - check-extra-feats
          - fuzz
-         - aarch64-tests
-         - power-tests
-         - ibm-z-tests
         include:
          - conf: beta-build
            toolchain: beta
@@ -79,15 +114,6 @@ jobs:
            toolchain: stable
          - conf: fuzz
            toolchain: nightly-2020-05-14
-         - conf: aarch64-tests
-           toolchain: stable
-           target: aarch64-unknown-linux-gnu
-         - conf: powerpc-tests
-           toolchain: stable
-           target: powerpc64le-unknown-linux-gnu
-         - conf: ibm-z-tests
-           toolchain: stable
-           target: s390x-unknown-linux-gnu
 
     env:
       RUST_BACKTRACE: 1
@@ -185,17 +211,6 @@ jobs:
       run: |
         curl -L "$LINK/v$GRCOV_VERSION/grcov-linux-x86_64.tar.bz2" |
         tar xj -C $HOME/.cargo/bin
-    - name: Install cross
-      if: >
-        matrix.conf == 'aarch64-tests' || matrix.conf == 'powerpc-tests' ||
-        matrix.conf == 'ibm-z-tests'
-      env:
-        LINK: https://github.com/rust-embedded/cross/releases/download
-        CROSS_VERSION: 0.2.0
-        CROSS_FILE: cross-v0.2.0-x86_64-unknown-linux-musl
-      run: |
-        curl -L "$LINK/v$CROSS_VERSION/$CROSS_FILE.tar.gz" |
-        tar xz -C $HOME/.cargo/bin
     - name: Install ${{ matrix.toolchain }}
       uses: actions-rs/toolchain@v1
       with:
@@ -242,14 +257,6 @@ jobs:
         cargo test --verbose --release \
                    --features=decode_test_dav1d \
                    --color=always -- --color=always --ignored
-    - name: Run cross tests
-      if: >
-        matrix.conf == 'aarch64-tests' || matrix.conf == 'powerpc-tests' ||
-        matrix.conf == 'ibm-z-tests'
-      run: |
-        cross test --verbose \
-                   --target ${{ matrix.target }} \
-                   --features=decode_test,quick_test,capi
     - name: Run build
       if: matrix.conf == 'beta-build'
       run: |
