@@ -71,8 +71,13 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: stable-aarch64-unknown-linux-gnu
+        toolchain: stable
+        target: aarch64-unknown-linux-gnu
         override: true
+
+    - name: Set target build
+      run: |
+        echo ::set-env name=CARGO_BUILD_TARGET::aarch64-unknown-linux-gnu
 #    - name: Install cross
 #      env:
 #        LINK: https://github.com/rust-embedded/cross/releases/download
