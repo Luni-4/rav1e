@@ -95,8 +95,8 @@ jobs:
         # way faster at arm emulation than the current version github actions'
         # ubuntu image uses. Disable as much as we can to get it to build
         # quickly.
-        curl https://download.qemu.org/qemu-4.2.0.tar.xz | tar xJf -
-        cd qemu-4.2.0
+        curl https://download.qemu.org/qemu-5.0.0.tar.xz | tar xJf -
+        cd qemu-5.0.0
         ./configure --target-list=aarch64-linux-user --prefix=$HOME/qemu --disable-tools --disable-slirp --disable-fdt --disable-capstone --disable-docs
         make -j$(nproc) install
         # Configure Cargo for cross compilation and tell it how it can run
@@ -106,7 +106,7 @@ jobs:
         echo ::set-env name=CARGO_TARGET_${upcase}_LINKER::aarch64-linux-gnu-gcc
     - name: Run tests
       run: |
-        cargo test --target aarch64-unknown-linux-gnu
+        cargo test --target aarch64-unknown-linux-gnu --no-default-features
 
   build-unix:
 
