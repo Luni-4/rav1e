@@ -8,6 +8,7 @@ on:
             - master
 jobs:
     build-pack-test:
+
         name: wasm-pack build, pack, test
 
         strategy:
@@ -27,6 +28,10 @@ jobs:
             SCCACHE_DIR: /home/runner/.cache/sccache
             SCCACHE_IDLE_TIMEOUT: 0
             RAV1E_JS_DIR: rav1e_js
+
+        if: >-
+         !contains(github.event.head_commit.message, '[skip-ci]') ||
+         !contains(github.event.pull_request.labels.*.names, 'skip-ci')
 
         runs-on: ubuntu-latest
 
